@@ -10,6 +10,23 @@
     <header>
     <h1 class="title">TaskMaster</h1>
 </header>
+<div id="search-container">
+    <input type="text" id="task-search" placeholder="Search Tasks" oninput="filterTasks()">
+</div>
+<div id="filter-container">
+    <label for="filter-priority">Filter by Priority:</label>
+    <select id="filter-priority" onchange="filterTasks()">
+        <option value="">All</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+    </select>
+
+    <label for="filter-date">Filter by Due Date:</label>
+    <input type="date" id="filter-date" onchange="filterTasks()">
+</div>
+
+
     <div id="auth-form">
         <h2>Login</h2>
         <input type="email" id="login-email" placeholder="Email">
@@ -77,7 +94,33 @@
                 document.getElementById('task-form').style.display = 'block';
                 loadTasks();
             }
+            
         }
+        // delete
+        async function deleteTask(taskId) {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+                        method: "DELETE",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                    });
+                    if (response.ok) {
+                        console.log("Task deleted successfully!");
+                        loadTasks();
+                    } else {
+                        console.error("Failed to delete task.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting task:", error);
+                }
+            }
+
+             async function editTask(taskId) {
+                    // You can implement editing logic here
+                    console.log(`Editing task with ID: ${taskId}`);
+                }
 
         // Add Task
         async function addTask() {
@@ -111,11 +154,88 @@
             tasksList.innerHTML = '';
 
             tasks.forEach(task => {
-                const li = document.createElement('li');
-                li.textContent = `${task.title} - ${task.priority}- ${task.description}`;
-                tasksList.appendChild(li);
+                const taskItem = document.createElement('div');
+                taskItem.classList.add('task-item');
+                taskItem.innerHTML = `
+                        <strong>${task.title}</strong><br>
+                        <em>Description:</em> ${task.description}<br>
+                        <em>Deadline:</em> ${new Date(task.deadline).toLocaleDateString()}<br>
+                        <em>Priority:</em> ${task.priority || 'N/A'}<br>
+                        <button onclick="deleteTask('${task._id}')">Delete</button>
+                        <button onclick="editTask('${task._id}')">Edit</button>
+                    `;
+                tasksList.appendChild(taskItem);
             });
         }
+
+
+
+        let allTasks = []; // Store all tasks for filtering
+
+            // Update loadTasks to store tasks globally
+            async function loadTasks() {
+                const res = await fetch('http://localhost:5000/api/tasks', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                allTasks = await res.json(); // Store tasks in global variable
+                displayTasks(allTasks); // Display all tasks initially
+            }
+
+            // Function to display tasks
+            function displayTasks(tasks) {
+                const tasksList = document.getElementById('tasks-list');
+                tasksList.innerHTML = '';
+
+                tasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.classList.add('task-item');
+                    taskItem.innerHTML = `
+            <strong>${task.title}</strong><br>
+            <em>Description:</em> ${task.description}<br>
+            <em>Deadline:</em> ${new Date(task.deadline).toLocaleDateString()}<br>
+            <em>Priority:</em> ${task.priority || 'N/A'}<br>
+            <button onclick="deleteTask('${task._id}')">Delete</button>
+            <button onclick="editTask('${task._id}')">Edit</button>
+        `;
+                    tasksList.appendChild(taskItem);
+                });
+            }
+
+            // Filter tasks based on search query
+            function filterTasks() {
+                const query = document.getElementById('task-search').value.toLowerCase();
+                const filteredTasks = allTasks.filter(task =>
+                    task.title.toLowerCase().includes(query) ||
+                    task.description.toLowerCase().includes(query) ||
+                    (task.priority && task.priority.toLowerCase().includes(query))
+                );
+                displayTasks(filteredTasks); // Display only filtered tasks
+            }
+
+
+            // Filter tasks based on selected criteria
+                function filterTasks() {
+                    const priorityFilter = document.getElementById('filter-priority').value;
+                    const dateFilter = document.getElementById('filter-date').value;
+
+                    const filteredTasks = allTasks.filter(task => {
+                        const matchesPriority = priorityFilter
+                            ? task.priority === priorityFilter
+                            : true;
+
+                        const matchesDate = dateFilter
+                            ? new Date(task.deadline).toISOString().split('T')[0] === dateFilter
+                            : true;
+
+                        return matchesPriority && matchesDate;
+                    });
+
+                    displayTasks(filteredTasks); // Display the filtered tasks
+                }
+
+
     </script>
 </body>
 </html>
