@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header>
+    <h1 class="title">TaskMaster</h1>
+</header>
+    <div id="auth-form">
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <h2>Register</h2>
+        <input type="email" id="register-email" placeholder="Email">
+        <input type="password" id="register-password" placeholder="Password">
+        <button onclick="register()">Register</button>
+    </div>
+
+    <div id="task-form" style="display:none;">
+        <input type="text" id="task-title" placeholder="Task Title">
+        <textarea id="task-description" placeholder="Task Description"></textarea>
+        <input type="date" id="task-deadline">
+        <select id="task-priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+        </select>
+        <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <h2 class="tas">Your Tasks</h2>
+    <ul id="tasks-list"></ul>
+
+    <script>
+        let token = ''; // Store JWT Token
+
+        // Login
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            const res = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            if (data.token) {
+                token = data.token;
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('task-form').style.display = 'block';
+                loadTasks();
+            }
+        }
+
+        // Register
+        async function register() {
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+
+            const res = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            if (data.token) {
+                token = data.token;
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('task-form').style.display = 'block';
+                loadTasks();
+            }
+        }
+
+        // Add Task
+        async function addTask() {
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-description').value;
+            const deadline = document.getElementById('task-deadline').value;
+            const priority = document.getElementById('task-priority').value;
+
+            const res = await fetch('http://localhost:5000/api/tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ title, description, deadline, priority })
+            });
+
+            const data = await res.json();
+            loadTasks();
+        }
+
+        // Load Tasks
+        async function loadTasks() {
+            const res = await fetch('http://localhost:5000/api/tasks', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const tasks = await res.json();
+            const tasksList = document.getElementById('tasks-list');
+            tasksList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = `${task.title} - ${task.priority}- ${task.description}`;
+                tasksList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+body {
+    margin: 0;
+    padding: 10px;
+    background-color: rgb(108, 108, 197);
+}
+
+header {
+    margin: 0;
+    font-size: 20px;
+    color: #fff;
+    text-align: center;
+}
+
+#auth-form {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    max-width: 60%;
+    gap: 10px;
+}
+
+#auth-form h2 {
+    color: #fff;
+    font-size: 26px;
+}
+
+#task-form {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    max-width: 60%;
+    margin: auto;
+}
+
+#task-form input,
+textarea,
+select {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px 5px;
+}
+
+#task-form button {
+    padding: 5px 20px;
+    font-size: 20px;
+    color: rgb(108, 108, 197);
+    background-color: #fff;
+    border: none;
+}
+
+.tas {
+    text-align: center;
+    color: #fff;
+}
+
+#tasks-list {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    width: 400px;
+    columns: #fff;
+    border: 1px solid #fff;
+    padding: 20px;
+}
+
+#tasks-list li {
+    color: #fff;
+    font-size: 26px;
+    list-style: none;
+}
